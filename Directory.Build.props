@@ -1,0 +1,18 @@
+<Project>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <LangVersion>latest</LangVersion>
+    <Version>1.4.0</Version>
+    <Authors>LeeHanryang</Authors>
+    <Company>LeeHanryang</Company>
+    <Product>CaptureOK</Product>
+    <Copyright>© 2026 LeeHanryang (https://github.com/LeeHanryang)</Copyright>
+  </PropertyGroup>
+  <!-- 배포본에는 디버그 기호(.pdb, 이 PC의 소스 경로가 들어 있음)를 넣지 않는다 -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+</Project>
