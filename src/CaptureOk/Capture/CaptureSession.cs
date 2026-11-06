@@ -339,7 +339,7 @@ internal sealed class CaptureSession
     {
         if (_finished) return;
         _buttonDown = false;
-        _selection.Key(SelectionKey.Escape, ctrl: false, alt: false);
+        _selection.Key(SelectionKey.Escape, fast: false, alt: false);
         AfterInput();
     }
 
@@ -358,7 +358,7 @@ internal sealed class CaptureSession
         }
         _buttonDown = false;
         var wasSelected = _selection.Phase == SelectionPhase.Selected;
-        _selection.Key(SelectionKey.RightButton, ctrl: false, alt: false);
+        _selection.Key(SelectionKey.RightButton, fast: false, alt: false);
         _gifWaitsForMove = wasSelected && _selection.Phase == SelectionPhase.Hovering;
         AfterInput();
     }
@@ -453,7 +453,7 @@ internal sealed class CaptureSession
         if (mapped is null) return false;
         if (mapped is SelectionKey.Enter or SelectionKey.Escape) _buttonDown = false; // 키보드로 끝낼 때는 버튼 떼기를 기다리지 않는다
 
-        if (_selection.Key(mapped.Value, IsCtrlDown(), IsAltDown()))
+        if (_selection.Key(mapped.Value, IsShiftDown(), IsAltDown()))
         {
             var (x, y) = _selection.Cursor;
             NativeMethods.SetCursorPos(x, y);

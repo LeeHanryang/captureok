@@ -14,7 +14,7 @@ public enum SelectionKey { Left, Up, Right, Down, Enter, Escape, RightButton }
 public sealed class RegionSelection(ScreenLayout layout, PixelSize? fixedSize = null, bool confirmOnRelease = false)
 {
     private const int SmallStep = 1;
-    private const int LargeStep = 5;
+    private const int LargeStep = 10; // Shift+방향키
 
     private (int X, int Y) _anchor;
     private int _farthest; // 누른 곳에서 가장 멀리 간 거리 (한 번 끌면 제자리로 와도 드래그)
@@ -117,10 +117,10 @@ public sealed class RegionSelection(ScreenLayout layout, PixelSize? fixedSize = 
     }
 
     /// <returns>true면 호출자가 실제 커서를 <see cref="Cursor"/>로 옮겨야 한다.</returns>
-    public bool Key(SelectionKey key, bool ctrl, bool alt)
+    public bool Key(SelectionKey key, bool fast, bool alt)
     {
         if (IsFinished) return false;
-        var step = ctrl ? LargeStep : SmallStep;
+        var step = fast ? LargeStep : SmallStep;
 
         switch (key)
         {

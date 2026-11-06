@@ -23,7 +23,7 @@
         <Border Grid.Row="1" BorderThickness="0,0,0,1" BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}">
             <DockPanel Margin="8,4,8,6" LastChildFill="True">
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:Button x:Name="ClearButton" Focusable="False" Icon="{ui:SymbolIcon Delete24}" ToolTip="모두 지우기 (Ctrl+Q)" Padding="6" Margin="0,0,2,0" />
+                    <ui:Button x:Name="ClearButton" Focusable="False" Icon="{ui:SymbolIcon Delete24}" ToolTip="모두 지우기 (Ctrl+Delete)" Padding="6" Margin="0,0,2,0" />
                     <ui:Button x:Name="UndoButton" Focusable="False" Icon="{ui:SymbolIcon ArrowUndo24}" ToolTip="실행 취소 (Ctrl+Z)" Padding="6" Margin="0,0,2,0" />
                     <ui:Button x:Name="RedoButton" Focusable="False" Icon="{ui:SymbolIcon ArrowRedo24}" ToolTip="다시 실행 (Ctrl+Y)" Padding="6" Margin="0,0,8,0" />
                     <TextBlock x:Name="ZoomText" Text="100%" VerticalAlignment="Center" MinWidth="44" TextAlignment="Center" Margin="0,0,8,0" Cursor="Hand"

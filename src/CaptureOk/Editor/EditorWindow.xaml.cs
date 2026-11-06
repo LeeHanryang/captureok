@@ -716,7 +716,7 @@ public partial class EditorWindow : FluentWindow
                 case Key.Y: Redo(); break;
                 case Key.C: Copy(); break;
                 case Key.S: Save(); break;
-                case Key.Q: ClearAll(); break;
+                case Key.Delete: ClearAll(); break; // Delete = 고른 것만, Ctrl+Delete = 모두
                 case Key.D0 or Key.NumPad0: SetZoom(1.0); break;
                 default: return;
             }

@@ -29,7 +29,7 @@ public class RegionSelectionTests
         var s = new RegionSelection(ScreenLayoutTests.TwoSideBySide(), confirmOnRelease: true);
         s.MouseMove(10, 10, shift: false);
         s.MouseDown(10, 10);
-        s.Key(SelectionKey.Right, ctrl: false, alt: false); // 누른 채 방향키로 1px 미세 조정
+        s.Key(SelectionKey.Right, fast: false, alt: false); // 누른 채 방향키로 1px 미세 조정
         s.MouseMove(20, 30, shift: false);
         s.MouseUp(20, 30, shift: false);
 
@@ -67,28 +67,28 @@ public class RegionSelectionTests
         var s = new RegionSelection(ScreenLayoutTests.TwoSideBySide());
         s.MouseMove(100, 100, shift: false);
 
-        Assert.True(s.Key(SelectionKey.Right, ctrl: false, alt: false));
+        Assert.True(s.Key(SelectionKey.Right, fast: false, alt: false));
         Assert.Equal((101, 100), s.Cursor);
-        Assert.True(s.Key(SelectionKey.Down, ctrl: true, alt: false));
-        Assert.Equal((101, 105), s.Cursor);
+        Assert.True(s.Key(SelectionKey.Down, fast: true, alt: false));
+        Assert.Equal((101, 110), s.Cursor);
     }
 
     [Fact(DisplayName = "arrow-selected-moves-rect")]
     public void ArrowSelectedMovesRect()
     {
         var s = Dragged(10, 10, 20, 30);
-        s.Key(SelectionKey.Right, ctrl: false, alt: false);
+        s.Key(SelectionKey.Right, fast: false, alt: false);
         Assert.Equal(new PixelRect(11, 10, 11, 21), s.Rect);
-        s.Key(SelectionKey.Up, ctrl: true, alt: false);
-        Assert.Equal(new PixelRect(11, 5, 11, 21), s.Rect);
+        s.Key(SelectionKey.Down, fast: true, alt: false);
+        Assert.Equal(new PixelRect(11, 20, 11, 21), s.Rect);
     }
 
     [Fact(DisplayName = "alt-arrow-resizes")]
     public void AltArrowResizes()
     {
         var s = Dragged(10, 10, 20, 30);
-        s.Key(SelectionKey.Right, ctrl: false, alt: true);
-        s.Key(SelectionKey.Up, ctrl: false, alt: true);
+        s.Key(SelectionKey.Right, fast: false, alt: true);
+        s.Key(SelectionKey.Up, fast: false, alt: true);
         Assert.Equal(new PixelRect(10, 10, 12, 20), s.Rect);
     }
 
@@ -96,8 +96,8 @@ public class RegionSelectionTests
     public void AltArrowResizeStaysInsideVirtualScreen()
     {
         var s = Dragged(5100, 1420, 5119, 1439); // 오른쪽·아래 가장자리에 붙은 선택
-        s.Key(SelectionKey.Right, ctrl: false, alt: true);
-        s.Key(SelectionKey.Down, ctrl: false, alt: true);
+        s.Key(SelectionKey.Right, fast: false, alt: true);
+        s.Key(SelectionKey.Down, fast: false, alt: true);
         Assert.Equal(new PixelRect(5100, 1420, 20, 20), s.Rect);
     }
 
@@ -105,7 +105,7 @@ public class RegionSelectionTests
     public void EnterConfirms()
     {
         var s = Dragged(10, 10, 20, 30);
-        s.Key(SelectionKey.Enter, ctrl: false, alt: false);
+        s.Key(SelectionKey.Enter, fast: false, alt: false);
         Assert.Equal(SelectionPhase.Confirmed, s.Phase);
     }
 
@@ -154,7 +154,7 @@ public class RegionSelectionTests
     public void EscapeCancels()
     {
         var s = Dragged(10, 10, 20, 30);
-        s.Key(SelectionKey.Escape, ctrl: false, alt: false);
+        s.Key(SelectionKey.Escape, fast: false, alt: false);
         Assert.Equal(SelectionPhase.Cancelled, s.Phase);
     }
 
@@ -162,11 +162,11 @@ public class RegionSelectionTests
     public void RightClickReselects()
     {
         var s = Dragged(10, 10, 20, 30);
-        s.Key(SelectionKey.RightButton, ctrl: false, alt: false);
+        s.Key(SelectionKey.RightButton, fast: false, alt: false);
         Assert.Equal(SelectionPhase.Hovering, s.Phase);
         Assert.Null(s.Rect);
 
-        s.Key(SelectionKey.RightButton, ctrl: false, alt: false);
+        s.Key(SelectionKey.RightButton, fast: false, alt: false);
         Assert.Equal(SelectionPhase.Cancelled, s.Phase);
     }
 

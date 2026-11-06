@@ -41,7 +41,7 @@ internal static class ToolCursors
             cursor = new Cursor(new MemoryStream(Build(kind, size).CursorFile));
         }
         catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException or NotSupportedException
-            or System.Runtime.InteropServices.COMException or UriFormatException)
+            or System.Runtime.InteropServices.COMException or FormatException) // 글꼴 파일이 깨졌으면 FileFormatException
         {
             AppLog.Write($"도구 커서 만들기 실패 {kind}: {ex.Message}");
             cursor = Cursors.Cross;
@@ -106,22 +106,24 @@ internal static class ToolCursors
     private static string? _fontFile;
 
     /// <summary>
-    /// WPF UI 라이브러리에 들어 있는 아이콘 글꼴(채운 모양)을 임시 폴더에 한 번 꺼내 둔 파일 경로.
+    /// WPF UI 라이브러리에 들어 있는 아이콘 글꼴(채운 모양)을 앱 데이터 폴더에 꺼내 둔 파일 경로.
     /// (GlyphTypeface는 파일에서만 읽을 수 있다. 라이브러리 버전마다 다른 이름이라 업데이트되면 새로 꺼낸다.)
+    /// 이미 있는 파일은 크기가 자원과 같을 때만 쓴다 — 덜 써졌거나 다른 파일이면 다시 꺼낸다.
     /// </summary>
     private static string FilledFontFile()
     {
         if (_fontFile is not null) return _fontFile;
         const string resourceName = "resources/fonts/fluentsystemicons-filled.ttf";
         var library = typeof(SymbolIcon).Assembly;
-        var path = Path.Combine(Path.GetTempPath(), "CaptureOk", $"FluentSystemIcons-Filled-{library.GetName().Version}.ttf");
-        if (!File.Exists(path))
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CaptureOk", "fonts",
+            $"FluentSystemIcons-Filled-{library.GetName().Version}.ttf");
+        using var resources = library.GetManifestResourceStream($"{library.GetName().Name}.g.resources")
+            ?? throw new InvalidOperationException("아이콘 글꼴 자원을 찾지 못했습니다");
+        using var reader = new System.Resources.ResourceReader(resources);
+        var entry = reader.Cast<System.Collections.DictionaryEntry>().FirstOrDefault(e => (string)e.Key == resourceName);
+        if (entry.Value is not Stream font) throw new InvalidOperationException("아이콘 글꼴 자원을 찾지 못했습니다");
+        if (!File.Exists(path) || new FileInfo(path).Length != font.Length)
         {
-            using var resources = library.GetManifestResourceStream($"{library.GetName().Name}.g.resources")
-                ?? throw new InvalidOperationException("아이콘 글꼴 자원을 찾지 못했습니다");
-            using var reader = new System.Resources.ResourceReader(resources);
-            var entry = reader.Cast<System.Collections.DictionaryEntry>().FirstOrDefault(e => (string)e.Key == resourceName);
-            if (entry.Value is not Stream font) throw new InvalidOperationException("아이콘 글꼴 자원을 찾지 못했습니다");
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             var partial = path + ".tmp";
             using (var file = File.Create(partial)) font.CopyTo(file);
