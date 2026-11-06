@@ -59,6 +59,11 @@ Name: "{userdesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopico
 ; 앱의 환경설정 "Windows 시작 시 실행"과 같은 값이다 (앱은 이 값을 실제 상태로 본다)
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "CaptureOk"; ValueData: """{app}\{#AppExe}"""; Tasks: autostart
 
+[InstallDelete]
+; 1.5.0에만 있던 Windows 알림용 부품 (덮어 설치하면 남으므로 지운다)
+Type: files; Name: "{app}\Microsoft.Windows.SDK.NET.dll"
+Type: files; Name: "{app}\WinRT.Runtime.dll"
+
 [UninstallDelete]
 ; 설치 프로그램이 만들지 않은(전에 직접 복사해 둔) 폴더도 비었으면 지운다
 Type: dirifempty; Name: "{app}"
@@ -147,7 +152,7 @@ begin
   begin
     { 설치할 때 고르지 않았더라도 앱 환경설정에서 켰을 수 있다 }
     RegDeleteValue(HKEY_CURRENT_USER, RunKey, 'CaptureOk');
-    { 앱이 저장 알림(Windows 알림)을 띄우려고 등록한 앱 이름·아이콘 }
+    { 1.5.0이 저장 알림(Windows 알림)을 띄우려고 등록한 앱 이름·아이콘 (이후 버전은 시작할 때 지움) }
     RegDeleteKeyIncludingSubkeys(HKEY_CURRENT_USER, 'Software\Classes\AppUserModelId\LeeHanryang.CaptureOK');
   end;
   if (CurUninstallStep = usPostUninstall) and not UninstallSilent() then

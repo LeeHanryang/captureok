@@ -72,7 +72,7 @@ internal sealed class TrayHost : IDisposable
         _icon.ShowBalloonTip(4000, title, text, icon);
     }
 
-    /// <summary>저장 알림 (Windows 알림을 띄울 수 없을 때): 알림을 클릭하면 그 파일을 Windows 기본 프로그램으로 연다.</summary>
+    /// <summary>저장 알림 (알림 창을 띄울 수 없을 때): 알림을 클릭하면 그 파일을 Windows 기본 프로그램으로 연다.</summary>
     public void ShowFileSaved(string title, string text, string path)
     {
         _icon.ShowBalloonTip(4000, title, $"{text}\n클릭하면 엽니다", ToolTipIcon.Info);

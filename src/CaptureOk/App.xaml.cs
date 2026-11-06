@@ -77,7 +77,8 @@ public partial class App : Application
         RestorePinned();
         _history.Changed += ReleaseImagesNotInHistory; // 목록에서 지운·빠진 캡처의 원본을 놓는다
         _tray = new TrayHost(OnCapture, () => _settings.SaveFolder, OpenEditor, OpenSettings, RequestExit);
-        _saved = new SavedNotifier(_tray, Dispatcher);
+        _saved = new SavedNotifier(_tray);
+        SavedNotifier.RemoveOldRegistration();
         _tray.UpdateShortcuts(_settings.Hotkeys);
         SessionEnding += (_, _) => ExitNow(); // 로그오프·종료 때는 묻지 않는다
         _instance.ExitRequested += () => Dispatcher.BeginInvoke(ExitNow); // 설치·제거 중에도 묻지 않는다 (설치 프로그램이 먼저 물음)
