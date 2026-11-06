@@ -40,6 +40,12 @@ public class ScreenLayoutTests
         Assert.Equal(new PixelRect(5, 3, 6, 8), PixelRect.FromPoints(10, 10, 5, 3));
     }
 
+    [Fact(DisplayName = "inflate-grows-every-side")]
+    public void InflateGrowsEverySide()
+    {
+        Assert.Equal(new PixelRect(-3, 7, 106, 56), new PixelRect(0, 10, 100, 50).Inflate(3));
+    }
+
     [Fact(DisplayName = "clamp-to-virtual")]
     public void ClampToVirtual()
     {

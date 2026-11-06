@@ -34,16 +34,20 @@ internal static class GifCapture
         var path = Path.Combine(Folder, $"{Guid.NewGuid():N}.gif");
 
         StopSignal? stop = null;
+        Frame? frame = null;
         Indicator? indicator = null;
         Task<Result>? recording = null;
         try
         {
             var monitor = ScreenGrabber.CurrentLayout().MonitorAt(rect.X + rect.Width / 2, rect.Y + rect.Height / 2);
             stop = new StopSignal();
+            // 테두리를 띄우기 전에 한다 — 가운데 점 아래 창을 찾으므로 테두리 창이 먼저 잡히지 않게
+            ScrollCapture.FocusTarget(rect); // 영역을 고른 창에 곧바로 키보드 입력이 가고, 그 창이 맨 위에 찍히게
+            frame = new Frame(rect, monitor.Scale);
+            frame.Show();
             indicator = new Indicator(rect, monitor, stop.Request);
             indicator.Show();
             if (!indicator.Placed) indicator.Hide(); // 찍히지 않게 둘 곳이 없으면 Esc로만 멈춘다
-            ScrollCapture.FocusTarget(rect); // 영역을 고른 창에 곧바로 키보드 입력이 가고, 그 창이 맨 위에 찍히게
             await Task.Delay(OverlayGone);
 
             var clock = Stopwatch.StartNew();
@@ -66,6 +70,7 @@ internal static class GifCapture
         finally
         {
             indicator?.Close();
+            frame?.Close();
             if (stop is not null) await stop.CloseAsync();
         }
     }
@@ -186,6 +191,51 @@ internal static class GifCapture
             for (var i = 0; i < 30 && _escDown; i++) await Task.Delay(50);
             if (_keyHook != 0) NativeMethods.UnhookWindowsHookEx(_keyHook);
             _keyHook = 0;
+        }
+    }
+
+    /// <summary>
+    /// 녹화하는 범위를 둘러싼 빨간 테두리. 범위 바깥에 그려서 캡처에서 빼지 못하는 Windows에서도 녹화되지 않는다.
+    /// 마우스는 통과해서 아래 프로그램을 그대로 조작할 수 있다.
+    /// </summary>
+    private sealed class Frame : Window
+    {
+        public Frame(PixelRect region, double scale)
+        {
+            var thickness = Math.Max(2, (int)Math.Round(2 * scale)); // 물리 픽셀
+            var outer = region.Inflate(thickness);
+            WindowStyle = WindowStyle.None;
+            ResizeMode = ResizeMode.NoResize;
+            AllowsTransparency = true;
+            Background = Brushes.Transparent;
+            ShowInTaskbar = false;
+            ShowActivated = false;
+            Topmost = true;
+            var border = new Border { BorderBrush = new SolidColorBrush(Color.FromRgb(0xFF, 0x3B, 0x30)) };
+            Content = border;
+
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            Left = outer.X / scale; // 대략 그 자리에 띄운 뒤, 물리 픽셀로 정확히 옮긴다
+            Top = outer.Y / scale;
+            Width = outer.Width / scale;
+            Height = outer.Height / scale;
+            void Place()
+            {
+                var handle = new WindowInteropHelper(this).Handle;
+                NativeMethods.SetWindowPos(handle, NativeMethods.HWND_TOPMOST, outer.X, outer.Y, outer.Width, outer.Height, NativeMethods.SWP_NOACTIVATE);
+                // 창이 놓인 모니터 배율로 선 두께를 맞춘다 (물리 픽셀 thickness만큼)
+                border.BorderThickness = new Thickness(thickness / VisualTreeHelper.GetDpi(this).DpiScaleX);
+            }
+            SourceInitialized += (_, _) =>
+            {
+                var handle = new WindowInteropHelper(this).Handle;
+                var ex = NativeMethods.GetWindowLongPtr(handle, NativeMethods.GWL_EXSTYLE);
+                NativeMethods.SetWindowLongPtr(handle, NativeMethods.GWL_EXSTYLE,
+                    (nint)(ex | NativeMethods.WS_EX_NOACTIVATE | NativeMethods.WS_EX_TOOLWINDOW | NativeMethods.WS_EX_TRANSPARENT | NativeMethods.WS_EX_LAYERED));
+                NativeMethods.SetWindowDisplayAffinity(handle, NativeMethods.WDA_EXCLUDEFROMCAPTURE);
+                Place();
+            };
+            DpiChanged += (_, _) => Dispatcher.BeginInvoke(Place);
         }
     }
 

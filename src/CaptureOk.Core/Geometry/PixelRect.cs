@@ -21,6 +21,9 @@ public readonly record struct PixelRect(int X, int Y, int Width, int Height)
             : new PixelRect(left, top, right - left, bottom - top);
     }
 
+    /// <summary>네 방향으로 같은 만큼 넓힌 사각형.</summary>
+    public PixelRect Inflate(int by) => new(X - by, Y - by, Width + by * 2, Height + by * 2);
+
     /// <summary>두 점(둘 다 포함)을 잇는 사각형. 방향은 상관없다.</summary>
     public static PixelRect FromPoints(int x1, int y1, int x2, int y2) =>
         new(Math.Min(x1, x2), Math.Min(y1, y2), Math.Abs(x2 - x1) + 1, Math.Abs(y2 - y1) + 1);
