@@ -26,6 +26,7 @@ public partial class App : Application
 
     private SingleInstance? _instance;
     private TrayHost? _tray;
+    private SavedNotifier? _saved;
     private HotkeyRegistrar? _hotkeys;
     private SettingsStore _store = null!;
     private CaptureSettings _settings = null!;
@@ -76,6 +77,7 @@ public partial class App : Application
         RestorePinned();
         _history.Changed += ReleaseImagesNotInHistory; // 목록에서 지운·빠진 캡처의 원본을 놓는다
         _tray = new TrayHost(OnCapture, () => _settings.SaveFolder, OpenEditor, OpenSettings, RequestExit);
+        _saved = new SavedNotifier(_tray, Dispatcher);
         _tray.UpdateShortcuts(_settings.Hotkeys);
         SessionEnding += (_, _) => ExitNow(); // 로그오프·종료 때는 묻지 않는다
         _instance.ExitRequested += () => Dispatcher.BeginInvoke(ExitNow); // 설치·제거 중에도 묻지 않는다 (설치 프로그램이 먼저 물음)
@@ -322,7 +324,7 @@ public partial class App : Application
         }
         var size = recorded.Bytes >= 1 << 20 ? $"{recorded.Bytes / (double)(1 << 20):F1}MB" : $"{Math.Max(1, recorded.Bytes >> 10)}KB";
         var message = $"{Path.GetFileName(saved)} ({recorded.Duration.TotalSeconds:F0}초, {size})";
-        _tray?.ShowFileSaved("GIF를 저장했습니다", recorded.Notice is { } notice ? $"{message}\n{notice}" : message, saved);
+        _saved?.Show("GIF를 저장했습니다", recorded.Notice is { } notice ? $"{message}\n{notice}" : message, saved);
     }
 
     /// <summary>임시 파일을 저장할 곳으로 복사한다. 저장 위치를 고르다 취소해도 녹화를 잃지 않게 한 번 더 묻는다. 저장한 경로를 돌려준다 (버렸으면 null).</summary>
@@ -437,7 +439,8 @@ public partial class App : Application
     }
 
     private EditorWindow EnsureEditor() => _editor ??= new EditorWindow(_history, _pinned, () => _settings, id => _images.GetValueOrDefault(id),
-        RememberSaveFolder, RememberPanelVisible, RememberPanelWidth, RememberPen);
+        RememberSaveFolder, RememberPanelVisible, RememberPanelWidth, RememberPen,
+        path => _saved?.Show("저장했습니다", Path.GetFileName(path), path));
 
     /// <summary>트레이에서 편집 창 열기. 캡처가 하나도 없으면 빈 목록과 안내 문구를 보여 준다.</summary>
     private void OpenEditor() => EnsureEditor().ShowCurrent();

@@ -65,6 +65,7 @@ public partial class EditorWindow : FluentWindow
     private readonly Func<CaptureSettings> _settings;
     private readonly Func<Guid, BitmapSource?> _imageOf;
     private readonly Action<string> _rememberFolder;
+    private readonly Action<string> _notifySaved; // 저장 알림 (열기·폴더 열기)
     private readonly Action<bool> _rememberPanel;
     private readonly Action<int> _rememberPanelWidth;
     private readonly Action<uint, int> _rememberPen;
@@ -93,8 +94,9 @@ public partial class EditorWindow : FluentWindow
     private Button _colorButton = null!;
 
     internal EditorWindow(CaptureHistory history, PinnedCaptures pinned, Func<CaptureSettings> settings, Func<Guid, BitmapSource?> imageOf,
-        Action<string> rememberFolder, Action<bool> rememberPanel, Action<int> rememberPanelWidth, Action<uint, int> rememberPen)
+        Action<string> rememberFolder, Action<bool> rememberPanel, Action<int> rememberPanelWidth, Action<uint, int> rememberPen, Action<string> notifySaved)
     {
+        _notifySaved = notifySaved;
         _history = history;
         _pinned = pinned;
         _settings = settings;
@@ -832,6 +834,7 @@ public partial class EditorWindow : FluentWindow
     {
         doc.MarkSaved();
         StatusRight.Text = $"저장됨: {Path.GetFileName(path)}";
+        _notifySaved(path);
     }
 
     private void Copy()

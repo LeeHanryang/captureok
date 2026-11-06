@@ -144,8 +144,12 @@ end;
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 begin
   if CurUninstallStep = usUninstall then
+  begin
     { 설치할 때 고르지 않았더라도 앱 환경설정에서 켰을 수 있다 }
     RegDeleteValue(HKEY_CURRENT_USER, RunKey, 'CaptureOk');
+    { 앱이 저장 알림(Windows 알림)을 띄우려고 등록한 앱 이름·아이콘 }
+    RegDeleteKeyIncludingSubkeys(HKEY_CURRENT_USER, 'Software\Classes\AppUserModelId\LeeHanryang.CaptureOK');
+  end;
   if (CurUninstallStep = usPostUninstall) and not UninstallSilent() then
     if MsgBox('환경설정과 고정한 캡처도 지울까요?' + #13#10 + #13#10 +
       '저장 폴더에 저장한 그림은 지우지 않습니다.', mbConfirmation, MB_YESNO or MB_DEFBUTTON2) = IDYES then
